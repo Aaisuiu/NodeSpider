@@ -1,4 +1,4 @@
-const Axios = require('axios');
+const Axios = require("axios");
 const path = require('path');
 const { jsonc } = require('jsonc');
 const CONFIG_PATH = path.resolve(__dirname, 'config.jsonc');
@@ -13,24 +13,49 @@ loadJSON = (path) => {
         } else if (message && message.includes('JSON')) {
             notice = `ERROR: 配置文件 JSON 格式有误\n${message}`;
         } else notice = `${e}`;
-        console.error( notice);
+        console.error(notice);
     }
 }
-
 const config = loadJSON(CONFIG_PATH);
-
-Axios.post(config.baseurl, {
-    headers: {
-        "user-agent":"Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like  Gecko) Chrome /80.0.3987.122 Safari / 537.36",
-        "Content-Type": "application/json"
-    },
-    data: {
-        type:"PP",
-        name:config.name,
-        pwd:config.password
-    }
+// 带上配置
+Axios({
+    method: 'post',
+    url: config.baseurl + '/pc/login/verify_pwd_login/',
+    data: { type: "PP", name: config.name, pwd: config.password },
+    responseType: 'json',
 })
+    .then((ret) => {
+        if (ret.data.success != true) throw (ret.data);
+        const setCookies = ret.headers['set-cookie'];
+        const cookies = { 'csrftoken': setCookies[0].slice(10, 42), 'sessionid': setCookies[1].slice(10, 42) }
+        return cookies;
+    })
+    .then(async (cookies) => {
+
+        var cookie = `csrftoken=${cookies['csrftoken']};sessionid=${cookies['sessionid']};django_language=zh-cn;`
+        const ret = await Axios({
+            method: 'get',
+            url: config.baseurl + '/v/course_meta/on_lesson_courses',
+            headers: { 'Cookie': cookie },
+            withCredentials: true
+        })
+        return ret;
+    })
     .then(ret => ret.data)
-    .then((ret)=>{
+    .then(ret => {
+        if (ret.data['on_lessons'] == '') throw(new Date()+`  尚未有课程`);
+        if (ret['success'] != true) throw ('cookies不匹配');
         console.log(ret);
     })
+    .then(lessonId=>{
+        console.log(cookie);
+        Axios({
+            url: config.baseurl+`/v/lesson/lesson_info_entry/{lesson_id}?ppt_version=1.5&source=5`
+        })
+    })
+    .catch(e => {
+        console.log(e);
+    })
+
+
+    https://zhuanlan.zhihu.com/p/29052022
