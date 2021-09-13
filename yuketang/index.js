@@ -59,20 +59,24 @@ const config = loadJSON(CONFIG_PATH);
 
 
 https://zhuanlan.zhihu.com/p/29052022
-
-const sgin = async () => {
+var sgin = async () => {
     try {
         const ret = await Axios({
             method: 'post',
             url: config.baseurl + '/pc/login/verify_pwd_login/',
-            data: { type: "PP", name: config.name, pwd: config.password },
+            data: {
+                type: "PP",
+                name: config.name,
+                pwd: config.password
+            },
             responseType: 'json',
         })
-
         if (ret.data.success != true) throw (ret.data);
         const setCookies = ret.headers['set-cookie'];
-        // console.log(setCookies);
-        const cookies = { 'csrftoken': setCookies[0].slice(10, 42), 'sessionid': setCookies[1].slice(10, 42) }
+        const cookies = {
+            csrftoken: setCookies[0].slice(10, 42),
+            sessionid: setCookies[1].slice(10, 42)
+        }
         const cookie = `csrftoken=${cookies['csrftoken']};sessionid=${cookies['sessionid']};django_language=zh-cn;`
         const on_lesson_courses = await Axios({
             method: 'get',
@@ -81,11 +85,16 @@ const sgin = async () => {
             withCredentials: true
         })
         if (on_lesson_courses.data['data']['on_lessons'] == '') throw (new Date() + `  尚未有课程`);
-        if (on_lesson_courses['data']['success'] != true) throw ('cookies不匹配');
-        const lessonId = '';
-        Axios({
-            url: config.baseurl + `/v/lesson/lesson_info_entry/${lessonId}?ppt_version=1.5&source=5`
+        const lessonName = on_lesson_courses.data['data']['on_lessons'][0]['name'];
+        const lessonId = on_lesson_courses.data['data']['on_lessons'][0]['lesson_id']
+        const signIn = await Axios({
+            method: 'get',
+            url: config.baseurl + `/v/lesson/lesson_info_v2?lesson_id=${lessonId}&source=5`,
+            headers: { 'Cookie': cookie },
         })
+        if (signIn.data != undefined) console.log(lessonName + "签到成功" + new Date());
+
+
     }
     catch (e) {
         console.log(e);

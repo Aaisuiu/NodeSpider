@@ -1,8 +1,13 @@
 {
   "dependencies": {
     "axios": "^0.21.1",
+    "eslint": "^7.32.0",
     "jsonc": "^2.0.0",
     "path": "^0.12.7",
     "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint-loader": "^4.0.2"
   }
 }
