@@ -18,7 +18,7 @@ loadJSON = (path) => {
 }
 const config = loadJSON(CONFIG_PATH);
 
-var sgin = async (url,name,password) => {
+const sgin = async (url,name,password) => {
     try {
         const ret = await Axios({
             method: 'post',
