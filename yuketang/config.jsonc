@@ -1,5 +1,17 @@
 {
-    "baseurl":"https://changjiang.yuketang.cn",
-    "name":"",
-    "password":""
+    "baseurl": "https://changjiang.yuketang.cn",
+    "users": [
+        {
+            "name": "",
+            "password": ""
+        },
+        {
+            "name": "",
+            "password": ""
+        },
+        {
+            "name": "",
+            "password": ""
+        }
+    ]
 }

@@ -17,57 +17,16 @@ loadJSON = (path) => {
     }
 }
 const config = loadJSON(CONFIG_PATH);
-// 带上配置
-// Axios({
-//     method: 'post',
-//     url: config.baseurl + '/pc/login/verify_pwd_login/',
-//     data: { type: "PP", name: config.name, pwd: config.password },
-//     responseType: 'json',
-// })
-//     .then((ret) => {
-//         if (ret.data.success != true) throw (ret.data);
-//         const setCookies = ret.headers['set-cookie'];
-//         const cookies = { 'csrftoken': setCookies[0].slice(10, 42), 'sessionid': setCookies[1].slice(10, 42) }
-//         return cookies;
-//     })
-//     .then(async (cookies) => {
 
-//         var cookie = `csrftoken=${cookies['csrftoken']};sessionid=${cookies['sessionid']};django_language=zh-cn;`
-//         const ret = await Axios({
-//             method: 'get',
-//             url: config.baseurl + '/v/course_meta/on_lesson_courses',
-//             headers: { 'Cookie': cookie },
-//             withCredentials: true
-//         })
-//         return ret;
-//     })
-//     .then(ret => ret.data)
-//     .then(ret => {
-//         if (ret.data['on_lessons'] == '') throw(new Date()+`  尚未有课程`);
-//         if (ret['success'] != true) throw ('cookies不匹配');
-//         console.log(ret);
-//     })
-//     .then(lessonId=>{
-//         console.log(cookie);
-//         Axios({
-//             url: config.baseurl+`/v/lesson/lesson_info_entry/{lesson_id}?ppt_version=1.5&source=5`
-//         })
-//     })
-//     .catch(e => {
-//         console.log(e);
-//     })
-
-
-https://zhuanlan.zhihu.com/p/29052022
-var sgin = async () => {
+var sgin = async (url,name,password) => {
     try {
         const ret = await Axios({
             method: 'post',
-            url: config.baseurl + '/pc/login/verify_pwd_login/',
+            url: url + '/pc/login/verify_pwd_login/',
             data: {
                 type: "PP",
-                name: config.name,
-                pwd: config.password
+                name: name,
+                pwd: password
             },
             responseType: 'json',
         })
@@ -96,7 +55,7 @@ var sgin = async () => {
         // console.log(on_lesson_courses3.data['data']['onLessonClassrooms'][0]);
         const v1Lesson = on_lesson_courses1.data['data'] ? on_lesson_courses1.data['data']['on_lessons'][0] : [];
         const v3Lesson = on_lesson_courses3.data['data'] ? on_lesson_courses3.data['data']['onLessonClassrooms'][0] : [];
-        if (!v1Lesson && !v3Lesson) throw (new Date() + `  尚未有课程`);
+        if (!v1Lesson && !v3Lesson) throw (new Date() + `${name}  尚未有课程`);
         if (v1Lesson) {
 
             const lessonName = v1Lesson['name'];
@@ -106,7 +65,7 @@ var sgin = async () => {
                 url: config.baseurl + `/v/lesson/lesson_info_v2?lesson_id=${lessonId}&source=5`,
                 headers: { 'Cookie': cookie },
             })
-            if (signIn.data != undefined) console.log(lessonName + " 签到成功 " + new Date());
+            if (signIn.data != undefined) console.log(lessonName + `${name} 签到成功 ` + new Date());
 
         }
         if (v3Lesson) {
@@ -124,7 +83,7 @@ var sgin = async () => {
                     'lessonId': lessonId
                 }
             })
-            if (signIn.data['code'] == 0) console.log(lessonName + " 签到成功 " + new Date());
+            if (signIn.data['code'] == 0) console.log(lessonName + ` ${name} 签到成功 ` + new Date());
         }
 
     }
@@ -132,4 +91,11 @@ var sgin = async () => {
         console.log(e);
     }
 };
-sgin();
+
+const users = config.users;
+const url = config.baseurl;
+users.forEach(user => {
+    const name = user.name;
+    const password = user.password;
+    sgin(url,name,password)
+});
