@@ -84,6 +84,7 @@ var sgin = async () => {
             headers: { 'Cookie': cookie },
             withCredentials: true
         })
+        console.log(on_lesson_courses.data);
         if (on_lesson_courses.data['data']['on_lessons'] == '') throw (new Date() + `  尚未有课程`);
         const lessonName = on_lesson_courses.data['data']['on_lessons'][0]['name'];
         const lessonId = on_lesson_courses.data['data']['on_lessons'][0]['lesson_id']
